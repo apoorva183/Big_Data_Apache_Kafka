@@ -51,7 +51,20 @@ def main():
     for msg in consumer:
         doc = msg.value
         key = (doc.get("watch_key") or "").upper()
-        sent = float(doc.get("sentiment") or 0.0)
+        # sent = float(doc.get("sentiment") or 0.0)
+
+        raw = (doc.get("sentiment") or "").strip().lower()
+        try:
+            sent = float(raw)
+        except ValueError:
+            # map text labels to numeric sentiment
+            if raw in ("yes", "positive"):
+                sent = 1.0
+            elif raw in ("no", "negative"):
+                sent = -1.0
+            else:
+                sent = 0.0
+
         ts_str = doc.get("published_at") or iso_now()
         try:
             ts = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
